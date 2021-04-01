@@ -28,5 +28,15 @@ Yes please  :)
 
 
 ----
+Inspired by / Thanks to
+
+@mitchellh
+https://github.com/mitchellh/middleware/tree/master/lib/middleware
+
+@mperham + Sidekiq
+https://github.com/mperham/sidekiq/blob/master/lib/sidekiq/middleware/chain.rb
+
+
+----
 ![Gem](https://img.shields.io/gem/dt/meddlware?style=plastic)
 [![codecov](https://codecov.io/gh/dpep/meddlware_rb/branch/master/graph/badge.svg?token=1L7OD80182)](https://codecov.io/gh/dpep/meddlware_rb)
