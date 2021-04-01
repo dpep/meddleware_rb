@@ -196,17 +196,18 @@ describe Meddleware do
     end
   end
 
-  describe '#index' do
-    before do
-      subject.use A
-      subject.use B
-    end
+  describe '#count' do
+    it 'works' do
+      expect(subject.count).to be 0
 
-    it do
-      expect(subject.send(:index, A)).to be 0
-      expect(subject.send(:index, B)).to be 1
-      expect(subject.send(:index, C)).to be nil
-      expect(subject.send(:index, nil)).to be nil
+      subject.use A
+      expect(subject.count).to be 1
+
+      subject.use B
+      expect(subject.count).to be 2
+
+      subject.remove B
+      expect(subject.count).to be 1
     end
   end
 
@@ -248,6 +249,24 @@ describe Meddleware do
       end
 
       expect(instance.to_a.map(&:class)).to eq [ B, A ]
+    end
+  end
+
+  describe '#index' do
+    before do
+      subject.use A
+      subject.use B
+    end
+
+    it do
+      expect(subject.send(:index, A)).to be 0
+      expect(subject.send(:index, B)).to be 1
+      expect(subject.send(:index, C)).to be nil
+      expect(subject.send(:index, nil)).to be nil
+    end
+
+    it 'is a private method' do
+      expect { subject.index }.to raise_error(NoMethodError, /private/)
     end
   end
 end
