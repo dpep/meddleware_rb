@@ -1,57 +1,57 @@
 require 'meddleware/version'
 
 class Meddleware
-  include Enumerable
-
-  def initialize
+  def initialize(&block)
     instance_eval(&block) if block_given?
-  end
-
-  def each(&block)
-    stack.each(&block)
-  end
-
-  def index(klass)
-    stack.index {|entry| entry.klass == klass }
-  end
-
-  def remove(klass)
-    stack.reject! { |entry| entry.klass == klass }
   end
 
   def use(klass, *args)
     remove(klass)
     stack << Entry.new(klass, args)
+    self
   end
   alias append use
 
   def prepend(klass, *args)
     remove(klass)
     stack.insert(0, Entry.new(klass, args))
+    self
   end
 
   def after(after_klass, klass, *args)
     remove(klass)
     i = index(after_klass) || count - 1
     stack.insert(i + 1, Entry.new(klass, args))
+    self
   end
 
   def before(before_klass, klass, *args)
     remove(klass)
     i = index(before_klass) || 0
     stack.insert(i, Entry.new(klass, args))
+    self
+  end
+
+  def remove(klass)
+    stack.reject! { |entry| entry.klass == klass }
+    self
+  end
+
+  def count
+    stack.count
+  end
+  alias size count
+
+  def clear
+    stack.clear
   end
 
   def empty?
     stack.empty?
   end
 
-  def clear
-    stack.clear
-  end
-
   def call(*args, &block)
-    chain = map(&:build)
+    chain = to_a
     traverse = proc do |*updated_args|
       args = updated_args unless updated_args.empty?
       if chain.empty?
@@ -63,10 +63,18 @@ class Meddleware
     traverse.call(*args)
   end
 
+  def to_a
+    stack.map &:build
+  end
+
   private
 
   def stack
     @stack ||= []
+  end
+
+  def index(klass)
+    stack.index {|entry| entry.klass == klass }
   end
 
   Entry = Struct.new(:klass, :args) do
