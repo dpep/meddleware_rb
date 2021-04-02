@@ -30,7 +30,7 @@ Yes please  :)
 ----
 ### Inspired by / Thanks to
 
-[@mitchellh](https://github.com/mitchellh) + https://github.com/mitchellh/middleware/tree/master/lib/middleware
+[@mitchellh](https://github.com/mitchellh) + [middleware](https://github.com/mitchellh/middleware/tree/master/lib/middleware)
 
 [@mperham](https://github.com/mperham) + [Sidekiq](https://github.com/mperham/sidekiq/blob/master/lib/sidekiq/middleware/chain.rb)
 
