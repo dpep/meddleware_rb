@@ -37,4 +37,4 @@ Yes please  :)
 
 ----
 ![Gem](https://img.shields.io/gem/dt/meddleware?style=plastic)
-[![codecov](https://codecov.io/gh/dpep/meddleware_rb/branch/master/graph/badge.svg?token=1L7OD80182)](https://codecov.io/gh/dpep/meddleware_rb)
+[![codecov](https://codecov.io/gh/dpep/meddleware_rb/branch/main/graph/badge.svg)](https://codecov.io/gh/dpep/meddleware_rb)
