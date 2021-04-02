@@ -55,7 +55,7 @@ class Meddleware
     traverse = proc do |*updated_args|
       args = updated_args unless updated_args.empty?
       if chain.empty?
-        yield *args
+        yield(*args) if block
       else
         chain.shift.call(*args, &traverse)
       end
