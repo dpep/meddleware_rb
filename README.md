@@ -1,6 +1,7 @@
 Meddlware
 ======
-For all your middleware needs
+A middleware framework to make meddling easy.
+
 
 ```ruby
 require 'meddleware'
