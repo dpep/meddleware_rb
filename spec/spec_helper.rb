@@ -13,6 +13,8 @@ end
 
 require 'meddleware'
 
+Dir["./spec/support/**/*.rb"].sort.each { |f| require f }
+
 RSpec.configure do |config|
   # allow 'fit' examples
   config.filter_run_when_matching :focus

@@ -1,5 +1,3 @@
-Meddler = Class.new
-
 describe 'Meddleware#call' do
   subject { Meddleware.new }
 
@@ -160,8 +158,27 @@ describe 'Meddleware#call' do
     end
   end
 
-  # context 'with a middleware proc' do
-  #   let(:middleware) { Proc.new {} }
-  # end
+  context 'with a middleware instance and arguments' do
+    let(:middleware) { double(Meddler) }
 
+    before do
+      subject.use middleware, :abc
+    end
+
+    it 'curries the arguments' do
+      expect(middleware).to receive(:call) do |*args, &block|
+        expect(args).to eq([ :abc ])
+      end
+
+      subject.call
+    end
+
+    it 'curries and appends extra arguments' do
+      expect(middleware).to receive(:call) do |*args, &block|
+        expect(args).to eq([ :abc, :xyz ])
+      end
+
+      subject.call(:xyz)
+    end
+  end
 end

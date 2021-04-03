@@ -1,6 +1,6 @@
-A = Class.new
-B = Class.new
-C = Class.new
+A = Class.new(Meddler)
+B = Class.new(Meddler)
+C = Class.new(Meddler)
 
 
 describe Meddleware do
@@ -100,6 +100,24 @@ describe Meddleware do
       #   function.call { 123 }
       #   expect(stack).to eq [ Proc ]
       # end
+    end
+
+    context 'when middleware is invalid' do
+      after do
+        expect { subject.to_a }.to raise_error(ArgumentError)
+      end
+
+      it 'rejects classes that do not implement `.call`' do
+        function.call(Class.new)
+      end
+
+      it 'rejects instances that do not respond to `.call`' do
+        function.call(123)
+      end
+
+      it 'rejects nil' do
+        function.call(nil)
+      end
     end
   end
 

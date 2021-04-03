@@ -81,12 +81,23 @@ class Meddleware
     def build
       case klass
       when Class
+        unless klass.method_defined?(:call)
+          raise ArgumentError, "middleware must respond to `.call`: #{klass}"
+        end
+
         klass.new(*args)
-      when Proc
-        args.empty? ? klass : klass.curry[*args]
       else
-        # instance
-        args.empty? ? klass : klass.method(:call).curry[*args]
+        # instance or Proc?
+        unless klass.respond_to?(:call)
+          raise ArgumentError, "middleware must respond to `.call`: #{klass}"
+        end
+
+        if args.empty?
+          klass
+        else
+          # curry args
+          proc {|more_args| klass.call(*args, *more_args) }
+        end
       end
     end
   end
