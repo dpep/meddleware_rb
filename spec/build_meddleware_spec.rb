@@ -70,6 +70,37 @@ describe Meddleware do
         function.call(A, :abc, a: 1, b: 2)
       end
     end
+
+    context 'when middleware is an instance' do
+      it 'adds middleware to the stack' do
+        function.call(A.new)
+        expect(stack).to eq [ A ]
+      end
+
+      it 'will add multiple instances of the same class' do
+        function.call(A.new)
+        function.call(A.new)
+        expect(stack).to eq [ A, A ]
+      end
+    end
+
+    context 'when middleware is a block' do
+      it 'accepts procs' do
+        fn = Proc.new { 123 }
+        function.call(fn)
+        expect(stack).to eq [ Proc ]
+      end
+
+      it 'accepts lambdas' do
+        function.call(-> { 123 })
+        expect(stack).to eq [ Proc ]
+      end
+
+      # fit 'accepts inline blocks' do
+      #   function.call { 123 }
+      #   expect(stack).to eq [ Proc ]
+      # end
+    end
   end
 
   describe '#use' do

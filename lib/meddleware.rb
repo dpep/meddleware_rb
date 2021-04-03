@@ -79,7 +79,15 @@ class Meddleware
 
   Entry = Struct.new(:klass, :args) do
     def build
-      klass.new(*args)
+      case klass
+      when Class
+        klass.new(*args)
+      when Proc
+        args.empty? ? klass : klass.curry[*args]
+      else
+        # instance
+        args.empty? ? klass : klass.method(:call).curry[*args]
+      end
     end
   end
 end
