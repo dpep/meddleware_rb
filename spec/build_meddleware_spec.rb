@@ -219,7 +219,7 @@ describe Meddleware do
       expect(stack).to eq [ A, B, C ]
     end
 
-    it do
+    it 'removes middleware' do
       subject.remove(B)
       expect(stack).to eq [ A, C ]
       subject.remove(A)
