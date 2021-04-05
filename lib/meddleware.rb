@@ -71,7 +71,11 @@ class Meddleware
     default_args = args
 
     traverse = proc do |*args|
-      args = default_args if args.empty?
+      if args.empty?
+        args = default_args
+      else
+        default_args = args
+      end
 
       if chain.empty?
         yield(*args) if block_given?
