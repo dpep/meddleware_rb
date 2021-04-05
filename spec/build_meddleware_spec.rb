@@ -123,6 +123,12 @@ describe Meddleware do
         }.to raise_error(ArgumentError)
       end
 
+      it 'fails when both instance and block are passed' do
+        expect {
+          function.call(A.new) {}
+        }.to raise_error(ArgumentError)
+      end
+
       it 'rejects nil' do
         expect {
           function.call(nil)

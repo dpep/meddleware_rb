@@ -128,7 +128,7 @@ class Meddleware
         end
 
         unless block.nil?
-          raise ArgumentError, "can not supply middleware instance and block"
+          raise ArgumentError, 'can not supply middleware instance and block'
         end
       end
 
