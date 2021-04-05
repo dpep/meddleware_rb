@@ -7,11 +7,20 @@ describe Meddleware do
   subject { described_class.new }
 
   def stack
-    subject.to_a.map &:class
+    subject.send(:build_chain).map &:class
   end
 
-  shared_examples 'a middleware adder method' do |name, *args|
-    let(:function) { subject.method(name).curry[*args] }
+  shared_examples 'a middleware adder method' do |name|
+    let(:function) do
+      subject.method(name).yield_self do |fn|
+        if fn.arity < -1
+          # needs prefix arg, eg. :before/:after
+          proc {|*args, &block| fn.call(nil, *args, &block) }
+        else
+          fn
+        end
+      end
+    end
 
     it 'adds middleware to the stack' do
       function.call(A)
@@ -37,7 +46,7 @@ describe Meddleware do
     end
 
     context 'with arguments' do
-      after { subject.to_a }
+      after { subject.send :build_chain }
 
       it 'accepts an argument' do
         expect(A).to receive(:new).with(:abc)
@@ -86,37 +95,38 @@ describe Meddleware do
 
     context 'when middleware is a block' do
       it 'accepts procs' do
-        fn = Proc.new { 123 }
-        function.call(fn)
+        function.call(Proc.new {})
         expect(stack).to eq [ Proc ]
       end
 
       it 'accepts lambdas' do
-        function.call(-> { 123 })
+        function.call(-> {})
         expect(stack).to eq [ Proc ]
       end
 
-      # fit 'accepts inline blocks' do
-      #   function.call { 123 }
-      #   expect(stack).to eq [ Proc ]
-      # end
+      it 'accepts inline blocks' do
+        function.call {}
+        expect(stack).to eq [ Proc ]
+      end
     end
 
     context 'when middleware is invalid' do
-      after do
-        expect { subject.to_a }.to raise_error(ArgumentError)
-      end
-
       it 'rejects classes that do not implement `.call`' do
-        function.call(Class.new)
+        expect {
+          function.call(Class.new)
+        }.to raise_error(ArgumentError)
       end
 
       it 'rejects instances that do not respond to `.call`' do
-        function.call(123)
+        expect {
+          function.call(123)
+        }.to raise_error(ArgumentError)
       end
 
       it 'rejects nil' do
-        function.call(nil)
+        expect {
+          function.call(nil)
+        }.to raise_error(ArgumentError)
       end
     end
   end
@@ -156,7 +166,7 @@ describe Meddleware do
   end
 
   describe '#after' do
-    it_behaves_like 'a middleware adder method', :after, nil
+    it_behaves_like 'a middleware adder method', :after
 
     it 'adds middleware where specified' do
       subject.use A
@@ -187,7 +197,7 @@ describe Meddleware do
   end
 
   describe '#before' do
-    it_behaves_like 'a middleware adder method', :before, nil
+    it_behaves_like 'a middleware adder method', :before
 
     it 'adds middleware where specified' do
       subject.use A
@@ -260,6 +270,15 @@ describe Meddleware do
     end
   end
 
+  describe '#include?' do
+    it 'works' do
+      expect(subject.include?(A)).to be false
+
+      subject.use A
+      expect(subject.include?(A)).to be true
+    end
+  end
+
   describe '#remove' do
     before do
       subject.use A
@@ -278,9 +297,7 @@ describe Meddleware do
     end
 
     it 'is idempotent' do
-      subject.remove(A)
-      expect(stack).to eq [ B, C ]
-      subject.remove(A)
+      3.times { subject.remove(A) }
       expect(stack).to eq [ B, C ]
     end
 
@@ -297,7 +314,8 @@ describe Meddleware do
         prepend B
       end
 
-      expect(instance.to_a.map(&:class)).to eq [ B, A ]
+      expect(instance).to include A
+      expect(instance).to include B
     end
   end
 
@@ -315,7 +333,9 @@ describe Meddleware do
     end
 
     it 'is a private method' do
-      expect { subject.index }.to raise_error(NoMethodError, /private/)
+      expect {
+        subject.index
+      }.to raise_error(NoMethodError, /private/)
     end
   end
 end

@@ -1,6 +1,8 @@
 describe 'Meddleware#call' do
   subject { Meddleware.new }
 
+  let(:middleware) { Meddler.new }
+
   it 'works with no block, no stack' do
     expect(subject.call).to be nil
   end
@@ -22,8 +24,6 @@ describe 'Meddleware#call' do
   end
 
   context 'with a middleware class' do
-    let(:middleware) { double(Meddler) }
-
     it 'instantiates and calls the middleware' do
       expect(Meddler).to receive(:new).and_return(middleware)
       expect(middleware).to receive(:call)
@@ -34,8 +34,6 @@ describe 'Meddleware#call' do
   end
 
   context 'with a middleware instance' do
-    let(:middleware) { double(Meddler) }
-
     before do
       subject.use middleware
     end
@@ -159,8 +157,6 @@ describe 'Meddleware#call' do
   end
 
   context 'with a middleware instance and arguments' do
-    let(:middleware) { double(Meddler) }
-
     before do
       subject.use middleware, :abc
     end
@@ -179,6 +175,85 @@ describe 'Meddleware#call' do
       end
 
       subject.call(:xyz)
+    end
+
+    it 'curries and appends, without yielding implicitly' do
+      res = subject.call(:xyz) { 123 }
+      expect(res).to be nil
+      end
+
+    it 'curries and appends, and can yield explicitly' do
+      expect(middleware).to receive(:call) do |*args, &block|
+        block.call
+      end
+
+      res = subject.call(:xyz) { 123 }
+      expect(res).to be 123
+    end
+  end
+
+  context 'with a middleware Proc' do
+    it 'passes arguments to the Proc' do
+      fn = proc {|arg| expect(arg).to be :abc }
+      expect(fn).to receive(:call).and_call_original
+
+      subject.use fn
+      subject.call(:abc)
+    end
+
+    it 'curries arguments' do
+      fn = proc {|*args| expect(args).to eq [ :xyz, :abc ] }
+      expect(fn).to receive(:call).and_call_original
+
+      subject.use fn, :xyz
+      subject.call(:abc)
+    end
+
+    it 'can alter arguments' do
+      fn = proc {|data| data[:abc] = 123 }
+      subject.use fn
+
+      data = {}
+      subject.call(data)
+      expect(data).to eq({ abc: 123 })
+    end
+
+    it 'can not abort middleware chain...unfortunately' do
+      fn = proc { return }
+
+      subject.use fn
+      expect {
+        subject.call
+      }.to raise_error(LocalJumpError)
+    end
+
+    it 'calls yield implicitly' do
+      fn = proc {}
+      expect(fn).to receive(:call).and_call_original
+
+      subject.use fn
+      res = subject.call { 123 }
+      expect(res).to be 123
+    end
+  end
+
+  context 'with a middleware Lambda' do
+    it 'does not explicitly call yield' do
+      fn = ->{}
+      expect(fn).to receive(:call).and_call_original
+
+      subject.use fn
+      res = subject.call { 123 }
+      expect(res).to be nil
+    end
+
+    it 'does can explicitly yield' do
+      fn = ->(&block) { block.call }
+      expect(fn).to receive(:call).and_call_original
+
+      subject.use fn
+      res = subject.call { 123 }
+      expect(res).to be 123
     end
   end
 end

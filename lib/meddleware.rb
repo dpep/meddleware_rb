@@ -5,35 +5,39 @@ class Meddleware
     instance_eval(&block) if block_given?
   end
 
-  def use(klass, *args)
-    remove(klass)
-    stack << Entry.new(klass, args)
+  def use(*klass_and_args, &block)
+    entry = create_entry(klass_and_args, block)
+    stack << entry
     self
   end
   alias append use
 
-  def prepend(klass, *args)
-    remove(klass)
-    stack.insert(0, Entry.new(klass, args))
+  def prepend(*klass_and_args, &block)
+    entry = create_entry(klass_and_args, block)
+    stack.insert(0, entry)
     self
   end
 
-  def after(after_klass, klass, *args)
-    remove(klass)
+  def after(after_klass, *klass_and_args, &block)
+    entry = create_entry(klass_and_args, block)
     i = index(after_klass) || count - 1
-    stack.insert(i + 1, Entry.new(klass, args))
+    stack.insert(i + 1, entry)
     self
   end
 
-  def before(before_klass, klass, *args)
-    remove(klass)
+  def before(before_klass, *klass_and_args, &block)
+    entry = create_entry(klass_and_args, block)
     i = index(before_klass) || 0
-    stack.insert(i, Entry.new(klass, args))
+    stack.insert(i, entry)
     self
+  end
+
+  def include?(klass)
+    !!index(klass)
   end
 
   def remove(klass)
-    stack.reject! { |entry| entry.klass == klass }
+    stack.reject! { |entry| entry[0] == klass }
     self
   end
 
@@ -50,22 +54,31 @@ class Meddleware
     stack.empty?
   end
 
-  def call(*args, &block)
-    chain = to_a
-    traverse = proc do |*updated_args|
-      args = updated_args unless updated_args.empty?
+  def call(*args)
+    chain = build_chain
+    default_args = args
+
+    traverse = proc do |*args|
+      args = default_args if args.empty?
+
       if chain.empty?
-        yield(*args) if block
+        yield(*args) if block_given?
       else
-        chain.shift.call(*args, &traverse)
+        middleware = chain.shift
+
+        if middleware.is_a?(Proc) && !middleware.lambda?
+          middleware.call(*args)
+
+          # implicit yield
+          traverse.call(*args)
+        else
+          middleware.call(*args, &traverse)
+        end
       end
     end
     traverse.call(*args)
   end
 
-  def to_a
-    stack.map &:build
-  end
 
   private
 
@@ -74,29 +87,54 @@ class Meddleware
   end
 
   def index(klass)
-    stack.index {|entry| entry.klass == klass }
+    stack.index {|entry| entry[0] == klass }
   end
 
-  Entry = Struct.new(:klass, :args) do
-    def build
-      case klass
-      when Class
-        unless klass.method_defined?(:call)
-          raise ArgumentError, "middleware must respond to `.call`: #{klass}"
-        end
+  def create_entry(klass_and_args, block)
+    klass, *args = klass_and_args
 
-        klass.new(*args)
+    if [ klass, block ].compact.count == 0
+      raise ArgumentError, 'either a middleware or block must be provided'
+    end
+
+    # dedup
+    remove(klass || block)
+
+    if klass
+      # validate
+      if klass.is_a? Class
+        unless klass.method_defined?(:call)
+          raise ArgumentError, "middleware must implement `.call`: #{klass}"
+        end
       else
-        # instance or Proc?
         unless klass.respond_to?(:call)
           raise ArgumentError, "middleware must respond to `.call`: #{klass}"
         end
 
-        if args.empty?
+        unless block.nil?
+          raise ArgumentError, "can not supply middleware instance and block"
+        end
+      end
+
+      [ klass, args, block ]
+    else
+      [ block ]
+    end
+  end
+
+  def build_chain
+    # build the middleware stack
+    stack.map do |klass, args, block|
+      if klass.is_a? Class
+        klass.new(*args, &block)
+      else
+        if args.nil? || args.empty?
           klass
         else
           # curry args
-          proc {|more_args| klass.call(*args, *more_args) }
+          ->(*more_args, &block) do
+            klass.call(*args, *more_args, &block)
+          end
         end
       end
     end
