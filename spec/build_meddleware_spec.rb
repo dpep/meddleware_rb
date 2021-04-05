@@ -307,6 +307,43 @@ describe Meddleware do
     end
   end
 
+  describe '#replace' do
+    before do
+      subject.use A
+      subject.use B
+
+      expect(stack).to eq [ A, B ]
+    end
+
+    it 'replaces middleware' do
+      subject.replace(A, C)
+      expect(stack).to eq [ C, B ]
+    end
+
+    it 'works with middleware instances' do
+      instance = A.new
+      subject.replace(A, instance)
+
+      expect(subject).to include instance
+      expect(subject).not_to include A
+
+      subject.replace(instance, B)
+      expect(stack).to eq [ B ]
+    end
+
+    it 'fails when target middleware is missing' do
+      expect {
+        subject.replace(C, C)
+      }.to raise_error(RuntimeError)
+    end
+
+    it 'fails when middleware is invalid' do
+      expect {
+        subject.replace(A, nil)
+      }.to raise_error(ArgumentError)
+    end
+  end
+
   describe '.new' do
     it 'supports block mode' do
       instance = described_class.new do

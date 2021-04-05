@@ -41,6 +41,18 @@ class Meddleware
     self
   end
 
+  def replace(old_klass, *klass_and_args, &block)
+    entry = create_entry(klass_and_args, block)
+    i = index(old_klass)
+
+    unless i
+      raise RuntimeError, "middleware not present: #{old_klass}"
+    end
+
+    stack[i] = entry
+    self
+  end
+
   def count
     stack.count
   end
