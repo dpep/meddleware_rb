@@ -97,6 +97,8 @@ Checks whether the chain is empty.
 ```ruby
 # lib/mylist.rb
 module MyList
+  # generate an array from 1 to n
+  
   extend self
 
   def middleware(&block)
@@ -113,12 +115,14 @@ end
 # app/initializers/mylist.rb
 class OneExtra
   def call(n)
+    # adds one to the argument being passed in
     yield(n + 1)
   end
 end
 
 class Doubler
   def call(*)
+    # doubles the values of the result array
     yield.map {|x| x * 2 }
   end
 end
@@ -134,6 +138,8 @@ end
 
 # app/...
 MyList.generate(2)
+# would normally be [ 1, 2 ]
+# but with middleware:
 => [ 2, 4, 6 ]
 ```
 
