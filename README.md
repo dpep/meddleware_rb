@@ -163,6 +163,8 @@ Yes please  :)
 
 [@mperham](https://github.com/mperham) + [Sidekiq](https://github.com/mperham/sidekiq/blob/master/lib/sidekiq/middleware/chain.rb)
 
+[Rails](https://github.com/rails/rails/blob/main/actionpack/lib/action_dispatch/middleware/stack.rb)
+
 
 ----
 ![Gem](https://img.shields.io/gem/dt/meddleware?style=plastic)
