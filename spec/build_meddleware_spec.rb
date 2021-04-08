@@ -200,6 +200,33 @@ describe Meddleware do
       subject.after nil, C
       expect(stack).to eq [ A, C ]
     end
+
+    context 'when target is an array' do
+      before do
+        subject.use A
+        subject.use B
+      end
+
+      it 'inserts after the last target' do
+        subject.after [ A, B ], C
+        expect(stack).to eq [ A, B, C ]
+      end
+
+      it 'ignores missing targets' do
+        subject.after [ A, Meddler ], C
+        expect(stack).to eq [ A, C, B ]
+      end
+
+      it 'handles nil targets' do
+        subject.after [ nil, A ], C
+        expect(stack).to eq [ A, C, B ]
+      end
+
+      it 'handles an empty array' do
+        subject.after [], C
+        expect(stack).to eq [ A, B, C ]
+      end
+    end
   end
 
   describe '#before' do
@@ -230,6 +257,33 @@ describe Meddleware do
       subject.use A
       subject.before nil, C
       expect(stack).to eq [ C, A ]
+    end
+
+    context 'when target is an array' do
+      before do
+        subject.use A
+        subject.use B
+      end
+
+      it 'inserts before the first target' do
+        subject.before [ A, B ], C
+        expect(stack).to eq [ C, A, B ]
+      end
+
+      it 'ignores missing targets' do
+        subject.before [ B, Meddler ], C
+        expect(stack).to eq [ A, C, B ]
+      end
+
+      it 'handles nil targets' do
+        subject.before [ nil, B ], C
+        expect(stack).to eq [ A, C, B ]
+      end
+
+      it 'handles an empty array' do
+        subject.before [], C
+        expect(stack).to eq [ C, A, B ]
+      end
     end
   end
 
@@ -277,11 +331,35 @@ describe Meddleware do
   end
 
   describe '#include?' do
-    it 'works' do
-      expect(subject.include?(A)).to be false
-
+    before do
       subject.use A
-      expect(subject.include?(A)).to be true
+    end
+
+    it 'finds existing middleware' do
+      is_expected.to include A
+    end
+
+    it 'handles missing middleware' do
+      is_expected.not_to include B
+    end
+
+    it 'handles nil' do
+      is_expected.not_to include nil
+    end
+
+    context 'with multiple targets' do
+      it 'requires all targets to exist' do
+        expect(subject.include?(A, B)).to be false
+      end
+
+      it 'works when all targets exist' do
+        subject.use B
+        expect(subject.include?(A, B)).to be true
+      end
+
+      it 'handles nil' do
+        expect(subject.include?(A, nil)).to be false
+      end
     end
   end
 
@@ -310,6 +388,23 @@ describe Meddleware do
     it 'works with nil' do
       subject.remove(nil)
       expect(stack).to eq [ A, B, C ]
+    end
+
+    context 'with multiple targets' do
+      it 'removes multiple middleware' do
+        subject.remove(A, B)
+        expect(stack).to eq [ C ]
+      end
+
+      it 'handles redundancy' do
+        subject.remove(A, A)
+        expect(stack).to eq [ B, C ]
+      end
+
+      it 'handles nil' do
+        subject.remove(A, nil)
+        expect(stack).to eq [ B, C ]
+      end
     end
   end
 

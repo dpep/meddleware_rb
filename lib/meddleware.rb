@@ -20,24 +20,38 @@ class Meddleware
 
   def after(after_klass, *klass_and_args, &block)
     entry = create_entry(klass_and_args, block)
-    i = index(after_klass) || count - 1
+
+    i = if after_klass.is_a? Array
+      after_klass.map {|x| index(x) }.compact.max
+    else
+      index(after_klass)
+    end
+    i ||= count - 1 # last element
+
     stack.insert(i + 1, entry)
     self
   end
 
   def before(before_klass, *klass_and_args, &block)
     entry = create_entry(klass_and_args, block)
-    i = index(before_klass) || 0
+
+    i = if before_klass.is_a? Array
+      before_klass.map {|x| index(x) }.compact.min
+    else
+      index(before_klass)
+    end
+    i ||= 0 # first element
+
     stack.insert(i, entry)
     self
   end
 
-  def include?(klass)
-    !!index(klass)
+  def include?(*klass)
+    klass.all? {|x| index(x) }
   end
 
-  def remove(klass)
-    stack.reject! { |entry| entry[0] == klass }
+  def remove(*klass)
+    stack.reject! { |entry| klass.include?(entry[0]) }
     self
   end
 
