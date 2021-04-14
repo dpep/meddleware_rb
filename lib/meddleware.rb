@@ -149,7 +149,7 @@ class Meddleware
         end
       end
 
-      [ klass, args, block ]
+      [ klass, args, block ].compact
     else
       [ block ]
     end
