@@ -7,6 +7,7 @@ class Meddleware
 
   def use(*klass_and_args, &block)
     entry = create_entry(klass_and_args, block)
+    remove(entry[0])
     stack << entry
     self
   end
@@ -14,12 +15,14 @@ class Meddleware
 
   def prepend(*klass_and_args, &block)
     entry = create_entry(klass_and_args, block)
+    remove(entry[0])
     stack.insert(0, entry)
     self
   end
 
   def after(after_klass, *klass_and_args, &block)
     entry = create_entry(klass_and_args, block)
+    remove(entry[0])
 
     i = if after_klass.is_a? Array
       after_klass.map {|x| index(x) }.compact.max
@@ -34,6 +37,7 @@ class Meddleware
 
   def before(before_klass, *klass_and_args, &block)
     entry = create_entry(klass_and_args, block)
+    remove(entry[0])
 
     i = if before_klass.is_a? Array
       before_klass.map {|x| index(x) }.compact.min
@@ -57,6 +61,8 @@ class Meddleware
 
   def replace(old_klass, *klass_and_args, &block)
     entry = create_entry(klass_and_args, block)
+    remove(entry[0])
+
     i = index(old_klass)
 
     unless i
@@ -126,9 +132,6 @@ class Meddleware
     if [ klass, block ].compact.count == 0
       raise ArgumentError, 'either a middleware or block must be provided'
     end
-
-    # dedup
-    remove(klass || block)
 
     if klass
       # validate
