@@ -1,14 +1,13 @@
 Meddleware
 ======
-A middleware framework to make meddling easy.
+A middleware framework to make meddling easy.  Middleware is a popular pattern from Rack and Rails, which provides callers a way to execute code before and after yours.  Your code provides a way to register middleware components and then invokes the middleware chain in conjunction with its own logic.  This gives callers the ability to modify parameters or results, conditionally skip execution, and log activity without the need to monkey patch or subclass.
 
 
 ```ruby
 require 'meddleware'
 
 middleware = Meddlware.new do
-  use Tracer
-  after Tracer, Logger
+  use Logger
 end
 
 middleware.call(args) { puts args }
@@ -108,7 +107,11 @@ module MyList
   end
 
   def generate(n)
-    middleware.call(n) {|n| (1..n).to_a }
+    # invoke middleware chain
+    middleware.call(n) do |n|
+      # do the actual work of generating your results 
+      (1..n).to_a
+    end
   end
 end
 
@@ -122,7 +125,7 @@ end
 
 class Doubler
   def call(*)
-    # doubles the values of the result array
+    # modifies the results by doubles each value
     yield.map {|x| x * 2 }
   end
 end
@@ -136,11 +139,16 @@ MyList.middleware do
   append  {|x| puts "n ends as #{x}" }
 end
 
-# app/...
-MyList.generate(2)
-# would normally be [ 1, 2 ]
+
+# use it
+> MyList.generate(2)
+
+# would normally output [ 1, 2 ]
 # but with middleware:
-=> [ 2, 4, 6 ]
+
+n starts as 2
+n ends as 3
+=> [2, 4, 6]
 ```
 
 ----
