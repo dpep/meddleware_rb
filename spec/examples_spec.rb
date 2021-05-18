@@ -1,4 +1,6 @@
 module MyList
+  # generate an array from 1 to n
+
   extend self
 
   def middleware(&block)
@@ -8,18 +10,24 @@ module MyList
   end
 
   def generate(n)
-    middleware.call(n) {|n| (1..n).to_a }
+    # invoke middleware chain
+    middleware.call(n) do |n|
+      # do the actual work of generating your results
+      (1..n).to_a
+    end
   end
 end
 
 class OneExtra
   def call(n)
+    # adds one to the argument being passed in
     yield(n + 1)
   end
 end
 
 class Doubler
   def call(*)
+    # modifies the results by doubles each value
     yield.map {|x| x * 2 }
   end
 end
@@ -45,5 +53,11 @@ describe MyList do
     }.to output("n starts as 2\nn ends as 3\n").to_stdout
 
     expect(res).to eq [ 2, 4, 6 ]
+  end
+
+  it 'logs to stdout' do
+    expect {
+      MyList.generate(2)
+    }.to output(/starts as 2/).to_stdout
   end
 end
