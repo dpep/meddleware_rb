@@ -45,6 +45,8 @@ describe MyList do
     end
   end
 
+  after { MyList.middleware.clear }
+
   it 'calls middleware chain and generates a list' do
     res = MyList.generate(2)
     expect(res).to eq [ 2, 4, 6 ]
