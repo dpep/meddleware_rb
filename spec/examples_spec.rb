@@ -46,18 +46,13 @@ describe MyList do
   end
 
   it 'calls middleware chain and generates a list' do
-    res = nil
-
-    expect {
-      res = MyList.generate(2)
-    }.to output("n starts as 2\nn ends as 3\n").to_stdout
-
+    res = MyList.generate(2)
     expect(res).to eq [ 2, 4, 6 ]
   end
 
   it 'logs to stdout' do
     expect {
       MyList.generate(2)
-    }.to output(/starts as 2/).to_stdout
+    }.to output("n starts as 2\nn ends as 3\n").to_stdout
   end
 end
