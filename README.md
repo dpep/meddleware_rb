@@ -10,7 +10,7 @@ middleware = Meddlware.new do
   use Logger
 end
 
-middleware.call(args) { puts args }
+middleware.call(args) { ... }
 ```
 
 ## Usage
