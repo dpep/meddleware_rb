@@ -6,15 +6,40 @@ A middleware framework to make meddling easy.  Middleware is a popular pattern f
 ```ruby
 require 'meddleware'
 
-middleware = Meddlware.new do
-  use Logger
+# lib/mywidget.rb
+class MyWidget
+  def self.middleware(&block)
+    (@middleware ||= Meddleware.new).tap do
+      @middleware.instance_eval(&block) if block_given?
+    end
+  end
+
+  def do_the_thing
+    # invoke middleware chain
+    MyWidget.middleware.call do
+      # do your thing
+      ...
+    end
+  end
 end
 
-middleware.call(args) { ... }
+# config/initializers/mywidget.rb
+MyWidget.middleware do
+  # add a logger
+  use { puts "before the thing" }
+
+  # add another middleware
+  use MyMiddleware
+end
+
+
+# use it from whereever
+MyWidget.new.do_the_thing
 ```
 
+
 ## Usage
-```
+```ruby
 Meddleware.new
 ```
 Create a new middleware chain.
