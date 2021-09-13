@@ -5,23 +5,23 @@ class Meddleware
     instance_eval(&block) if block_given?
   end
 
-  def use(*klass_and_args, &block)
-    entry = create_entry(klass_and_args, block)
+  def use(*args, **kwargs, &block)
+    entry = create_entry(args, kwargs, block)
     remove(entry[0])
     stack << entry
     self
   end
   alias append use
 
-  def prepend(*klass_and_args, &block)
-    entry = create_entry(klass_and_args, block)
+  def prepend(*args, **kwargs, &block)
+    entry = create_entry(args, kwargs, block)
     remove(entry[0])
     stack.insert(0, entry)
     self
   end
 
-  def after(after_klass, *klass_and_args, &block)
-    entry = create_entry(klass_and_args, block)
+  def after(after_klass, *args, **kwargs, &block)
+    entry = create_entry(args, kwargs, block)
     remove(entry[0])
 
     i = if after_klass.is_a? Array
@@ -35,8 +35,8 @@ class Meddleware
     self
   end
 
-  def before(before_klass, *klass_and_args, &block)
-    entry = create_entry(klass_and_args, block)
+  def before(before_klass, *args, **kwargs, &block)
+    entry = create_entry(args, kwargs, block)
     remove(entry[0])
 
     i = if before_klass.is_a? Array
@@ -59,8 +59,8 @@ class Meddleware
     self
   end
 
-  def replace(old_klass, *klass_and_args, &block)
-    entry = create_entry(klass_and_args, block)
+  def replace(old_klass, *args, **kwargs, &block)
+    entry = create_entry(args, kwargs, block)
     remove(entry[0])
 
     i = index(old_klass)
@@ -86,37 +86,41 @@ class Meddleware
     stack.empty?
   end
 
-  def call(*args)
+  def call(*args, **kwargs)
     chain = build_chain
     default_args = args
+    default_kwargs = kwargs
 
-    traverse = proc do |*args|
-      if args.empty?
+    traverse = proc do |*args, **kwargs|
+      if args.empty? && kwargs.empty?
         args = default_args
+        kwargs = default_kwargs
       else
         default_args = args
+        default_kwargs = kwargs
       end
 
       if chain.empty?
-        yield(*args) if block_given?
+        yield(*args, **kwargs) if block_given?
       else
         middleware = chain.shift
 
         if middleware.is_a?(Proc) && !middleware.lambda?
-          middleware.call(*args)
+          middleware.call(*args, **kwargs)
 
           # implicit yield
-          traverse.call(*args)
+          traverse.call(*args, **kwargs)
         else
-          middleware.call(*args, &traverse)
+          middleware.call(*args, **kwargs, &traverse)
         end
       end
     end
-    traverse.call(*args)
+
+    traverse.call(*args, **kwargs)
   end
 
 
-  private
+  protected
 
   def stack
     @stack ||= []
@@ -126,10 +130,11 @@ class Meddleware
     stack.index {|entry| entry[0] == klass }
   end
 
-  def create_entry(klass_and_args, block)
-    klass, *args = klass_and_args
+  def create_entry(args, kwargs, block)
+    klass, *args = args
 
-    if [ klass, block ].compact.count == 0
+    # if [ klass, block ].compact.count == 0
+    if [ klass, block ].compact.empty?
       raise ArgumentError, 'either a middleware or block must be provided'
     end
 
@@ -149,7 +154,7 @@ class Meddleware
         end
       end
 
-      [ klass, args, block ].compact
+      [ klass, args, kwargs, block ].compact
     else
       [ block ]
     end
@@ -157,19 +162,32 @@ class Meddleware
 
   def build_chain
     # build the middleware stack
-    stack.map do |klass, args, block|
+    stack.map do |klass, args, kwargs, block|
       if klass.is_a? Class
-        klass.new(*args, &block)
+        klass.new(*args, **kwargs, &block)
       else
-        if args.nil? || args.empty?
+        if args.nil? && kwargs.nil?
+          # middleware is a block
+          klass
+        elsif args.empty? && kwargs.empty?
+          # nothing to curry, just pass through middleware instance
           klass
         else
           # curry args
-          ->(*more_args, &block) do
-            klass.call(*args, *more_args, &block)
+          ->(*more_args, **more_kwargs, &block) do
+            klass.call(
+              *(args + more_args),
+              **kwargs.merge(more_kwargs),
+              &block
+            )
           end
         end
       end
     end
+  end
+
+  if RUBY_VERSION < '3'
+    require 'meddleware/v2_5'
+    prepend Meddleware::V2_5
   end
 end

@@ -2,6 +2,7 @@ describe 'Meddleware#call' do
   subject { Meddleware.new }
 
   let(:middleware) { Meddler.new }
+  ruby3 = RUBY_VERSION >= '3'
 
   it 'works with no block, no stack' do
     expect(subject.call).to be nil
@@ -18,8 +19,9 @@ describe 'Meddleware#call' do
   end
 
   it 'passes args through to block' do
-    subject.call(:abc, x: :yz) do |*args|
-      expect(args).to eq [ :abc, { x: :yz } ]
+    subject.call(:abc, x: :yz) do |*args, **kwargs|
+      expect(args).to eq [ :abc ]
+      expect(kwargs).to eq x: :yz
     end
   end
 
@@ -56,10 +58,10 @@ describe 'Meddleware#call' do
       subject.call {}
     end
 
-    it 'calls middleware with args and block' do
-      expect(middleware).to receive(:call) do |a, b, &block|
+    it 'calls middleware with args, kwargs, and block' do
+      expect(middleware).to receive(:call) do |a, b:, &block|
         expect(a).to be :a
-        expect(b).to eq({ b: :c })
+        expect(b).to eq(:c)
         expect(block).to be_a Proc
       end
 
@@ -80,8 +82,9 @@ describe 'Meddleware#call' do
       end
 
       it 'implicitly passes along original arguments' do
-        subject.call(:abc) do |arg|
-          expect(arg).to be :abc
+        subject.call(:abc, x: :yz) do |*args, **kwargs|
+          expect(args).to eq [ :abc ]
+          expect(kwargs).to eq x: :yz
         end
       end
     end
@@ -89,21 +92,23 @@ describe 'Meddleware#call' do
     context 'when middleware calls block with explicit arguments' do
       it 'can add arguments' do
         expect(middleware).to receive(:call) do |&block|
-          block.call(:abc)
+          block.call(:abc, x: :yz)
         end
 
-        subject.call do |arg|
-          expect(arg).to be :abc
+        subject.call do |*args, **kwargs|
+          expect(args).to eq [ :abc ]
+          expect(kwargs).to eq x: :yz
         end
       end
 
       it 'can override the arguments passed on' do
         expect(middleware).to receive(:call) do |&block|
-          block.call(:abc)
+          block.call(:abc, x: :z)
         end
 
-        subject.call(123) do |arg|
-          expect(arg).to be :abc
+        subject.call(123, x: :y) do |*args, **kwargs|
+          expect(args).to eq [ :abc ]
+          expect(kwargs).to eq x: :z
         end
       end
 
@@ -112,9 +117,9 @@ describe 'Meddleware#call' do
           block.call(nil)
         end
 
-        subject.call(:abc, :xyz) do |a, x|
-          expect(a).to be nil
-          expect(x).to be nil
+        subject.call(:abc, x: :yz) do |arg, **kwargs|
+          expect(arg).to be nil
+          expect(kwargs).to be_empty
         end
       end
     end
@@ -158,20 +163,22 @@ describe 'Meddleware#call' do
 
   context 'with a middleware instance and arguments' do
     before do
-      subject.use middleware, :abc
+      subject.use middleware, :abc, x: :yz
     end
 
     it 'curries the arguments' do
-      expect(middleware).to receive(:call) do |*args, &block|
-        expect(args).to eq([ :abc ])
+      expect(middleware).to receive(:call) do |*args, **kwargs, &block|
+        expect(args).to eq [ :abc ]
+        expect(kwargs).to eq x: :yz
       end
 
       subject.call
     end
 
-    it 'curries and appends extra arguments' do
-      expect(middleware).to receive(:call) do |*args, &block|
-        expect(args).to eq([ :abc, :xyz ])
+    it 'curries and appends extra arguments', if: ruby3 do
+      expect(middleware).to receive(:call) do |*args, **kwargs, &block|
+        expect(args).to eq [ :abc, :xyz ]
+        expect(kwargs).to eq x: :yz
       end
 
       subject.call(:xyz)

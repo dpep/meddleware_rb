@@ -473,7 +473,7 @@ describe Meddleware do
     it 'is a private method' do
       expect {
         subject.index
-      }.to raise_error(NoMethodError, /private/)
+      }.to raise_error(NoMethodError)
     end
   end
 end

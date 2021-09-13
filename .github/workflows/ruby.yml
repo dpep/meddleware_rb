@@ -13,11 +13,20 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        ruby-version: [ 3.0, 2.7, 2.5 ]
+
+    name: Ruby ${{ matrix.ruby-version }}
+
     steps:
     - uses: actions/checkout@v2
-    - uses: ruby/setup-ruby@v1
+    - name: setup Ruby ${{ matrix.ruby-version }}
+      uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 2.5.5
+        ruby-version: ${{ matrix.ruby-version }}
         bundler-cache: true
-    - run: bundle install
-    - run: bundle exec rake test
+    - name: install dependencies
+      run: bundle install
+    - name: run tests
+      run: bundle exec rake test
