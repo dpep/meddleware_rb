@@ -1,5 +1,6 @@
 require 'byebug'
 require 'rspec'
+require 'rspec/matchers/fail_matchers'
 require 'simplecov'
 
 SimpleCov.start do
@@ -18,4 +19,6 @@ Dir["./spec/support/**/*.rb"].sort.each { |f| require f }
 RSpec.configure do |config|
   # allow 'fit' examples
   config.filter_run_when_matching :focus
+
+  config.include RSpec::Matchers::FailMatchers
 end

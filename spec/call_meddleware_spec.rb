@@ -155,7 +155,9 @@ describe 'Meddleware#call' do
 
       it 'has no effect...unfortunately' do
         subject.call(:abc) do |arg|
-          expect(arg).to be :abc
+          expect {
+            expect(arg).to be 123
+          }.to fail
         end
       end
     end
