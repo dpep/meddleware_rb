@@ -161,6 +161,27 @@ describe 'Meddleware#call' do
         end
       end
     end
+
+    context 'when middleware wants to meddle with kwargs' do
+      before do
+        expect(middleware).to receive(:call) do |**opts, &block|
+          opts[:abc] = 123
+          block.call(opts) # must pass args explicitly
+        end
+      end
+
+      it 'alters the value for the block' do
+        subject.call({}) do |info|
+          expect(info).to eq({ abc: 123 })
+        end
+      end
+
+      it 'does not alter the value for the caller' do
+        info = {}
+        subject.call(info)
+        expect(info).to be_empty
+      end
+    end
   end
 
   context 'with a middleware instance and arguments' do
