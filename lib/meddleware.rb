@@ -186,7 +186,7 @@ class Meddleware
   end
 
   if RUBY_VERSION < '3'
-    require 'meddleware/v2_5'
-    prepend Meddleware::V2_5
+    require 'meddleware/v2_7'
+    prepend Meddleware::V2_7
   end
 end

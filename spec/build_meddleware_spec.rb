@@ -15,7 +15,7 @@ describe Meddleware do
       subject.method(name).yield_self do |fn|
         if fn.arity < -1
           # needs prefix arg, eg. :before/:after
-          proc {|*args, &block| fn.call(nil, *args, &block) }
+          proc {|*args, **kwargs, &block| fn.call(nil, *args, **kwargs, &block) }
         else
           fn
         end
@@ -63,20 +63,17 @@ describe Meddleware do
         function.call(A, a: 1, b: 2)
       end
 
-      it 'works with all forms of kwargs' do
-        expect(A).to receive(:new).with(a: 1, b: 2)
-        function.call(A, { a: 1, b: 2 })
-
-        expect(B).to receive(:new).with({ a: 1, b: 2 })
-        function.call(B, { a: 1, b: 2 })
-
-        expect(C).to receive(:new).with({ a: 1, b: 2 })
-        function.call(C, a: 1, b: 2)
-      end
-
       it 'works with both args and kwargs' do
         expect(A).to receive(:new).with(:abc, a: 1, b: 2)
         function.call(A, :abc, a: 1, b: 2)
+      end
+
+      it 'preserves hash style kwargs' do
+        expect(A).to receive(:new).with({ a: 1, b: 2 })
+        function.call(A, { a: 1, b: 2 })
+
+        expect(B).to receive(:new).with(:abc, { a: 1, b: 2 })
+        function.call(B, :abc, { a: 1, b: 2 })
       end
     end
 

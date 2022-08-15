@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.description = 'A middleware framework to make meddling easy.'
   s.homepage    = "https://github.com/dpep/#{package_name}_rb"
   s.license     = 'MIT'
-  s.required_ruby_version = '>= 2.5'
+  s.required_ruby_version = '>= 2.7'
 
   s.files       = Dir.glob('lib/**/*')
   s.test_files  = Dir.glob('spec/**/*_spec.rb')
