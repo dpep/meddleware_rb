@@ -1,3 +1,4 @@
+require 'meddleware/mixin'
 require 'meddleware/version'
 
 class Meddleware
