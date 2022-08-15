@@ -133,7 +133,7 @@ class Meddleware
   def create_entry(args, kwargs, block)
     klass, *args = args
 
-    if [ klass, block ].compact.empty?
+    if [ klass, block ].none?
       raise ArgumentError, 'either a middleware or block must be provided'
     end
 
