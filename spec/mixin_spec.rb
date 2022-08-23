@@ -16,13 +16,17 @@ describe Meddleware::Mixin do
     end
 
     it 'enables DSL' do
-      helper = ->(*) {}
-
       klass.middleware do
-        use helper
+        use Meddler
       end
 
-      expect(klass.middleware).to include(helper)
+      expect(klass.middleware).to include(Meddler)
+    end
+
+    it 'supports inline usage' do
+      klass.middleware.use Meddler
+
+      expect(klass.middleware).to include(Meddler)
     end
 
     it { expect(klass).not_to respond_to(:use) }
@@ -44,6 +48,7 @@ describe Meddleware::Mixin do
       expect(instance.middleware).to be(instance.middleware)
     end
 
+    it { expect(instance).not_to respond_to(:use) }
     it { expect(klass).not_to respond_to(:middleware) }
   end
 
