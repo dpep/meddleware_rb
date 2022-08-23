@@ -28,7 +28,7 @@ MyWidget.middleware do
 end
 
 
-# use it from whereever
+# use it from wherever
 # MyWidget.new.do_the_thing
 
 

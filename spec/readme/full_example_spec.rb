@@ -43,6 +43,8 @@ describe MyList do
       prepend {|x| puts "n starts as #{x}" }
       append  {|x| puts "n ends as #{x}" }
     end
+
+    allow($stdout).to receive(:puts) # suppress output
   end
 
   after { MyList.middleware.clear }
