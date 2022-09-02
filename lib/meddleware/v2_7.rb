@@ -1,6 +1,6 @@
 # backwards compatible functionality for Ruby 2.5
 
-class Meddleware
+module Meddleware
   module V2_7
     def use(*klass_and_args, &block)
       entry = create_entry(klass_and_args, block)

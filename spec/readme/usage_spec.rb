@@ -2,11 +2,7 @@ require 'meddleware'
 
 # lib/mywidget.rb
 class MyWidget
-  def self.middleware(&block)
-    (@middleware ||= Meddleware.new).tap do
-      @middleware.instance_eval(&block) if block_given?
-    end
-  end
+  extend Meddleware
 
   def do_the_thing
     # invoke middleware chain

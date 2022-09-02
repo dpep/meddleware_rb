@@ -4,12 +4,12 @@ describe Meddleware::Mixin do
   describe 'extend' do
     let(:klass) do
       Class.new do
-        extend Meddleware::Mixin
+        extend Meddleware
       end
     end
 
     it { expect(klass).to respond_to(:middleware) }
-    it { expect(klass.middleware).to be_a Meddleware }
+    it { expect(klass.middleware).to be_a Meddleware::Stack }
 
     it 'reuses the Meddleware instance' do
       expect(klass.middleware).to be(klass.middleware)
@@ -37,12 +37,12 @@ describe Meddleware::Mixin do
   describe 'include' do
     let(:klass) do
       Class.new do
-        include Meddleware::Mixin
+        include Meddleware
       end
     end
 
     it { expect(instance).to respond_to(:middleware) }
-    it { expect(instance.middleware).to be_a Meddleware }
+    it { expect(instance.middleware).to be_a Meddleware::Stack }
 
     it 'reuses the Meddleware instance' do
       expect(instance.middleware).to be(instance.middleware)
@@ -55,16 +55,16 @@ describe Meddleware::Mixin do
   describe 'extend and include' do
     let(:klass) do
       Class.new do
-        extend Meddleware::Mixin
-        include Meddleware::Mixin
+        extend Meddleware
+        include Meddleware
       end
     end
 
     it { expect(klass).to respond_to(:middleware) }
-    it { expect(klass.middleware).to be_a Meddleware }
+    it { expect(klass.middleware).to be_a Meddleware::Stack }
 
     it { expect(instance).to respond_to(:middleware) }
-    it { expect(instance.middleware).to be_a Meddleware }
+    it { expect(instance.middleware).to be_a Meddleware::Stack }
 
     it 'creates different Meddleware instances for class and instance' do
       expect(klass.middleware).not_to be(instance.middleware)

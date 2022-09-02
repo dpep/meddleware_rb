@@ -1,13 +1,8 @@
 module MyList
   # generate an array from 1 to n
 
+  extend Meddleware
   extend self
-
-  def middleware(&block)
-    (@middleware ||= Meddleware.new).tap do
-      @middleware.instance_eval(&block) if block_given?
-    end
-  end
 
   def generate(n)
     # invoke middleware chain
