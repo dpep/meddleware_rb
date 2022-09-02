@@ -1,6 +1,4 @@
-describe 'Meddleware#call' do
-  subject { Meddleware.new }
-
+describe Meddleware::Stack do
   let(:middleware_one) { Meddler.new }
   let(:middleware_two) { Meddler.new }
 

@@ -6,7 +6,7 @@ class MyWidget
 
   def do_the_thing
     # invoke middleware chain
-    MyWidget.middleware.call do
+    middleware.call do
       # do your thing
     end
   end

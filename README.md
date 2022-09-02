@@ -1,6 +1,6 @@
 Meddleware
 ======
-A middleware framework to make meddling easy.  Middleware is a popular pattern from Rack and Rails, which provides callers a way to execute code before and after yours.  Your code provides a way to register middleware components and then invokes the middleware chain in conjunction with its own logic.  This gives callers the ability to modify parameters or results, conditionally skip execution, and log activity without the need to monkey patch or subclass.
+A middleware framework to make meddling easy.  Middleware is a popular pattern from Rack and Rails, which provides callers a way to execute code before and after yours.  This gives callers the ability to modify parameters or results, conditionally skip execution, and log activity without the need to monkey patch or subclass.
 
 
 ```ruby
@@ -8,15 +8,11 @@ require 'meddleware'
 
 # lib/mywidget.rb
 class MyWidget
-  def self.middleware(&block)
-    (@middleware ||= Meddleware.new).tap do
-      @middleware.instance_eval(&block) if block_given?
-    end
-  end
+  extend Meddleware
 
   def do_the_thing
     # invoke middleware chain
-    MyWidget.middleware.call do
+    middleware.call do
       # do your thing
       ...
     end
@@ -121,17 +117,10 @@ Checks whether the chain is empty.
 ```ruby
 # lib/mylist.rb
 module MyList
+  extend Meddleware
+
   # generate an array from 1 to n
-  
-  extend self
-
-  def middleware(&block)
-    (@middleware ||= Meddleware.new).tap do
-      @middleware.instance_eval(&block) if block_given?
-    end
-  end
-
-  def generate(n)
+  def self.generate(n)
     # invoke middleware chain
     middleware.call(n) do |n|
       # do the actual work of generating your results 

@@ -1,10 +1,8 @@
 module MyList
+  extend Meddleware
   # generate an array from 1 to n
 
-  extend Meddleware
-  extend self
-
-  def generate(n)
+  def self.generate(n)
     # invoke middleware chain
     middleware.call(n) do |n|
       # do the actual work of generating your results

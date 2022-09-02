@@ -3,9 +3,7 @@ B = Class.new(Meddler)
 C = Class.new(Meddler)
 
 
-describe Meddleware do
-  subject { described_class.new }
-
+describe Meddleware::Stack do
   def stack
     subject.send(:build_chain).map &:class
   end

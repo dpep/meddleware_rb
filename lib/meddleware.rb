@@ -1,26 +1,29 @@
-require 'meddleware/mixin'
 require 'meddleware/stack'
 require 'meddleware/version'
 
 module Meddleware
-  extend self
-  # extend Meddleware::Stack
-
-  # def middleware(&block)
-  #   (@middleware ||= Meddleware::Stack.new).tap do
-  #     @middleware.instance_eval(&block) if block_given?
-  #   end
-  # end
-
-  def new(...)
-    Meddleware::Stack.new(...)
+  def middleware(&block)
+    (@middleware ||= Meddleware::Stack.new).tap do
+      @middleware.instance_eval(&block) if block_given?
+    end
   end
 
-  def extend_object(base)
-    base.extend(Meddleware::Mixin)
+  private
+
+  def self.extended(base)
+    unless base.instance_methods.include?(:middleware)
+      base.class_eval do
+        def middleware
+          self.class.middleware
+        end
+      end
+    end
   end
 
-  def append_features(base)
-    base.include(Meddleware::Mixin)
+  def self.append_features(base)
+    # remove instance helper from `extended`
+    base.remove_method(:middleware) if base.instance_methods.include?(:middleware)
+
+    super
   end
 end

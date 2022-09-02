@@ -1,8 +1,7 @@
-describe 'Meddleware#call' do
-  subject { Meddleware.new }
+ruby3 = RUBY_VERSION >= '3'
 
+describe Meddleware::Stack do
   let(:middleware) { Meddler.new }
-  ruby3 = RUBY_VERSION >= '3'
 
   it 'works with no block, no stack' do
     expect(subject.call).to be nil
