@@ -33,81 +33,36 @@ end
 MyWidget.new.do_the_thing
 ```
 
+
 ## Usage
-A class should 
+Extend your class with Meddleware to add a `middleware` method.  Or use `include` to give each instance its own, individual middleware.
 
 ```ruby
-Meddleware#call(*args, &block)
+class MyWidget
+  extend Meddleware
+end
+
+MyWidget.middleware
 ```
-Execute the middleware chain.
-* `args` - any arguments that should be passed through.
-* `block` - a final block that should be executed and whose returned value is passed back up the chain.
 
+Then wrap your class's functionality so it will get executed along with the all the registered middleware.
 
+```ruby
+class MyWidget
+  extend Meddleware
 
-## DSL
-
-
+  def do_the_thing
+    # invoke middleware chain
+    middleware.call(*args) do
+      # do your thing
+      ...
+    end
+  end
+end
 ```
-Meddleware#use(middleware, &block)
-```
-Add a middleware to the chain.
-* `middleware` - a class, instance, or Proc.  Must implement `.call`.
-* `block` - optional block, which is either passed to the middleware constructor or used as middleware.
 
 
-```
-Meddleware#prepend(middleware, &block)
-```
-Prepend a middleware to the chain.
-
-
-```
-Meddleware#after(target, middleware, &block)
-```
-Add a middleware to the chain, after the specified target.  If the target can not be found, simply append.
-
-
-```
-Meddleware#before(target, middleware, &block)
-```
-Add a middleware to the chain, before the specified target.  If the target can not be found, simply prepend.
-
-
-```
-Meddleware#include?(middleware)
-```
-Check if middleware has been added to the chain.
-
-
-```
-Meddleware#count
-```
-Returns the chain count.
-
-
-```
-Meddleware#remove(middleware)
-```
-Remove a middleware from the chain.
-
-
-```
-Meddleware#replace(target, middleware)
-```
-Replace one middleware for another.
-
-
-```
-Meddleware#clear
-```
-Clears the chain of middleware.
-
-
-```
-Meddleware#empty?
-```
-Checks whether the chain is empty.
+See [documentation](https://github.com/dpep/meddleware_rb/wiki/DSL) for full DSL.
 
 
 ----
