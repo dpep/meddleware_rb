@@ -33,21 +33,19 @@ end
 MyWidget.new.do_the_thing
 ```
 
-
 ## Usage
+A class should 
+
 ```ruby
-Meddleware.new
-```
-Create a new middleware chain.
-* `block` - optional block to add middleware
-
-
-```
 Meddleware#call(*args, &block)
 ```
 Execute the middleware chain.
 * `args` - any arguments that should be passed through.
 * `block` - a final block that should be executed and whose returned value is passed back up the chain.
+
+
+
+## DSL
 
 
 ```
