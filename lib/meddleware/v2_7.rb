@@ -1,4 +1,4 @@
-# backwards compatible functionality for Ruby 2.5
+# backwards compatible functionality for Ruby 2.7
 
 module Meddleware
   module V2_7
