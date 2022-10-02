@@ -1,5 +1,5 @@
-package_name = Dir.glob('*.gemspec')[0].split('.')[0]
-require "./lib/#{package_name}/version"
+package_name = File.basename(__FILE__).split(".")[0]
+load Dir.glob("lib/**/version.rb")[0]
 
 package = Meddleware
 
@@ -14,7 +14,13 @@ Gem::Specification.new do |s|
   s.license     = 'MIT'
   s.required_ruby_version = '>= 2.7'
 
-  s.files       = Dir.glob('lib/**/*')
+  s.files       = Dir[
+    __FILE__,
+    'lib/**/*',
+    'CHANGELOG*',
+    'LICENSE*',
+    'README*',
+  ]
 
   s.add_development_dependency 'byebug'
   s.add_development_dependency 'codecov'
