@@ -1,3 +1,3 @@
-module Meddleware
-  VERSION = '0.1.0'
+class Meddleware
+  VERSION = "0.2.0"
 end

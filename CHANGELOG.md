@@ -1,3 +1,10 @@
+###  v0.2.0  (2021-09-14)
+- ruby 3 compatibility
+- usage spec
+- fix tests
+- simplify: move dedup functionality out of build method
+- array support
+
 ###  v0.1.0  (2021-04-05)
 - spec examples
 - Update README.md
