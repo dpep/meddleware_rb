@@ -22,7 +22,7 @@ module Meddleware
 
   def self.append_features(base)
     # remove instance helper from `extended`
-    base.remove_method(:middleware) if base.instance_methods.include?(:middleware)
+    base.remove_method(:middleware) if base.instance_methods(false).include?(:middleware)
 
     super
   end

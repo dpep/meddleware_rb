@@ -93,4 +93,27 @@ describe Meddleware do
       expect(klass.middleware).not_to be(instance.middleware)
     end
   end
+
+  context "with a Module" do
+    describe 'extend' do
+      let(:mod) do
+        Module.new do
+          extend Meddleware
+        end
+      end
+
+      it { expect(mod).to respond_to(:middleware) }
+      it { expect(mod.middleware).to be_a Meddleware::Stack }
+    end
+
+    describe 'include' do
+      let(:mod) do
+        Module.new do
+          include Meddleware
+        end
+      end
+
+      it { expect(mod).not_to respond_to(:middleware) }
+    end
+  end
 end
