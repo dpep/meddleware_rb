@@ -1,3 +1,8 @@
+###  v0.3.0  (2022-10-11)
+- extendable
+- drop ruby 2.5 (#4)
+- remove rake
+
 ###  v0.2.0  (2021-09-14)
 - ruby 3 compatibility
 - usage spec
