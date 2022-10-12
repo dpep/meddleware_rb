@@ -1,3 +1,5 @@
+require 'singleton'
+
 describe Meddleware do
   let(:instance) { klass.new }
 
@@ -114,6 +116,25 @@ describe Meddleware do
       end
 
       it { expect(mod).not_to respond_to(:middleware) }
+    end
+  end
+
+  context "with a Singleton" do
+    describe "extend" do
+      let(:klass) do
+        Class.new do
+          include Singleton
+          extend Meddleware
+        end
+      end
+
+      let(:instance) { klass.instance }
+
+      it { expect(klass).to respond_to(:middleware) }
+      it { expect(klass.middleware).to be_a Meddleware::Stack }
+
+      it { expect(instance).to respond_to(:middleware) }
+      it { expect(instance.middleware).to be(klass.middleware) }
     end
   end
 end
