@@ -137,4 +137,20 @@ describe Meddleware do
       it { expect(instance.middleware).to be(klass.middleware) }
     end
   end
+
+  context "with a subclass" do
+    describe "extend" do
+      let(:parent) do
+        Class.new do
+          extend Meddleware
+        end
+      end
+
+      let(:klass) { Class.new(parent) }
+
+      it "will have a different middleware stack" do
+        expect(klass.middleware).not_to be parent.middleware
+      end
+    end
+  end
 end
