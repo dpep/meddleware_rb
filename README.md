@@ -1,5 +1,9 @@
 Meddleware
 ======
+![Gem](https://img.shields.io/gem/dt/meddleware?style=plastic)
+[![codecov](https://codecov.io/gh/dpep/meddleware_rb/branch/main/graph/badge.svg)](https://codecov.io/gh/dpep/meddleware_rb)
+
+
 A middleware framework to make meddling easy.  Middleware is a popular pattern from Rack and Rails, which provides callers a way to execute code before and after yours.  This gives callers the ability to modify parameters or results, conditionally skip execution, and log activity without the need to monkey patch or subclass.
 
 
@@ -139,8 +143,3 @@ Yes please  :)
 [@mperham](https://github.com/mperham) + [Sidekiq](https://github.com/mperham/sidekiq/blob/master/lib/sidekiq/middleware/chain.rb)
 
 [Rails](https://github.com/rails/rails/blob/main/actionpack/lib/action_dispatch/middleware/stack.rb)
-
-
-----
-![Gem](https://img.shields.io/gem/dt/meddleware?style=plastic)
-[![codecov](https://codecov.io/gh/dpep/meddleware_rb/branch/main/graph/badge.svg)](https://codecov.io/gh/dpep/meddleware_rb)
