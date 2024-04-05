@@ -183,10 +183,5 @@ module Meddleware
         end
       end
     end
-
-    if RUBY_VERSION < '3'
-      require 'meddleware/v2_7'
-      prepend Meddleware::V2_7
-    end
   end
 end
