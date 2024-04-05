@@ -1,3 +1,10 @@
+###  v0.4.0  (2024-04-05)
+- drop ruby 2.7
+- gem constraints
+- simplify codecov
+- drop rake
+- test coverage
+
 ###  v0.3.0  (2022-10-11)
 - extendable
 - drop ruby 2.5 (#4)
