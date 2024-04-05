@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    meddleware (0.0.1)
+    meddleware (0.3.0)
 
 GEM
   remote: https://rubygems.org/
