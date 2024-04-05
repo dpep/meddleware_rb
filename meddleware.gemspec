@@ -14,6 +14,6 @@ Gem::Specification.new do |s|
   s.required_ruby_version = '>= 3'
 
   s.add_development_dependency 'byebug'
-  s.add_development_dependency 'rspec'
+  s.add_development_dependency 'rspec', '>= 3.10'
   s.add_development_dependency 'simplecov'
 end
