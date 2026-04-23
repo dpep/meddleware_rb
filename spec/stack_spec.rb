@@ -196,6 +196,13 @@ describe Meddleware::Stack do
       expect(stack).to eq [ A, C ]
     end
 
+    it 'sorts correctly when dependency target is added later' do
+      subject.after B, C
+      subject.use A
+      subject.use B
+      expect(stack).to eq [ A, B, C ]
+    end
+
     context 'when target is an array' do
       before do
         subject.use A
@@ -252,6 +259,13 @@ describe Meddleware::Stack do
       subject.use A
       subject.before nil, C
       expect(stack).to eq [ C, A ]
+    end
+
+    it 'sorts correctly when dependency target is added later' do
+      subject.before B, C
+      subject.use A
+      subject.use B
+      expect(stack).to eq [ C, A, B ]
     end
 
     context 'when target is an array' do
