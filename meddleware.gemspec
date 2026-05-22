@@ -1,11 +1,10 @@
 require_relative "lib/meddleware/version"
-package = Meddleware
 
 Gem::Specification.new do |s|
-  s.name        = File.basename(__FILE__).split(".")[0]
-  s.version     = package.const_get 'VERSION'
+  s.name        = "meddleware"
+  s.version     = Meddleware::VERSION
   s.authors     = ['Daniel Pepper']
-  s.summary     = package.to_s
+  s.summary     = "Meddleware"
   s.description = 'A middleware framework to make meddling easy.'
   s.homepage    = "https://github.com/dpep/meddleware_rb"
   s.license     = 'MIT'
