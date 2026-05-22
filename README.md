@@ -66,12 +66,9 @@ end
 ```
 
 
-See [documentation](https://github.com/dpep/meddleware_rb/wiki/DSL) for full DSL.
-
-
 ## Ordering
 
-Middleware can declare ordering constraints via `before:` and `after:`.  The stack is resolved with a topological sort (via Ruby's `TSort`), so the order is correct regardless of when each middleware is added.
+Middleware can declare ordering constraints via `before:` and `after:`.  The stack is resolved with a topological sort (via Ruby's [`TSort`](https://docs.ruby-lang.org/en/master/TSort.html)), so the order is correct regardless of when each middleware is added.
 
 ```ruby
 MyWidget.middleware do
@@ -82,7 +79,10 @@ end
 # => [ Logger, Auth, Validator ]
 ```
 
-The convenience methods `before(target, ...)` and `after(target, ...)` are shorthand for the same.
+Both kwargs accept a single class or an array.  The convenience methods `before(target, ...)` and `after(target, ...)` are shorthand for `use(..., before: target)` / `use(..., after: target)`.  A constraint referencing a middleware that isn't in the stack is treated as vacuous and ignored; circular dependencies raise `TSort::Cyclic` when the chain is built.
+
+
+See the [wiki](https://github.com/dpep/meddleware_rb/wiki/DSL) for the full DSL.
 
 
 ----
