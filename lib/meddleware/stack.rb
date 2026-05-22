@@ -1,52 +1,36 @@
+require 'tsort'
+
 module Meddleware
   class Stack
+    include TSort
+
+    Entry = Struct.new(:klass, :args, :kwargs, :block, :before, :after)
+
     def initialize(&block)
       instance_eval(&block) if block_given?
     end
 
-    def use(*args, **kwargs, &block)
-      entry = create_entry(args, kwargs, block)
-      remove(entry[0])
+    def use(*args, before: nil, after: nil, **kwargs, &block)
+      entry = create_entry(args, kwargs, block, before: before, after: after)
+      remove(entry.klass)
       stack << entry
       self
     end
     alias append use
 
-    def prepend(*args, **kwargs, &block)
-      entry = create_entry(args, kwargs, block)
-      remove(entry[0])
-      stack.insert(0, entry)
+    def prepend(*args, before: nil, after: nil, **kwargs, &block)
+      entry = create_entry(args, kwargs, block, before: before, after: after)
+      remove(entry.klass)
+      stack.unshift(entry)
       self
     end
 
     def after(after_klass, *args, **kwargs, &block)
-      entry = create_entry(args, kwargs, block)
-      remove(entry[0])
-
-      i = if after_klass.is_a? Array
-        after_klass.map {|x| index(x) }.compact.max
-      else
-        index(after_klass)
-      end
-      i ||= count - 1 # last element
-
-      stack.insert(i + 1, entry)
-      self
+      use(*args, **kwargs, after: after_klass, &block)
     end
 
     def before(before_klass, *args, **kwargs, &block)
-      entry = create_entry(args, kwargs, block)
-      remove(entry[0])
-
-      i = if before_klass.is_a? Array
-        before_klass.map {|x| index(x) }.compact.min
-      else
-        index(before_klass)
-      end
-      i ||= 0 # first element
-
-      stack.insert(i, entry)
-      self
+      use(*args, **kwargs, before: before_klass, &block)
     end
 
     def include?(*klass)
@@ -54,13 +38,13 @@ module Meddleware
     end
 
     def remove(*klass)
-      stack.reject! { |entry| klass.include?(entry[0]) }
+      stack.reject! { |entry| klass.include?(entry.klass) }
       self
     end
 
-    def replace(old_klass, *args, **kwargs, &block)
-      entry = create_entry(args, kwargs, block)
-      remove(entry[0])
+    def replace(old_klass, *args, before: nil, after: nil, **kwargs, &block)
+      entry = create_entry(args, kwargs, block, before: before, after: after)
+      remove(entry.klass)
 
       i = index(old_klass)
 
@@ -126,10 +110,28 @@ module Meddleware
     end
 
     def index(klass)
-      stack.index {|entry| entry[0] == klass }
+      stack.index {|entry| entry.klass == klass }
     end
 
-    def create_entry(args, kwargs, block)
+    # TSort: iterate over all entries
+    def tsort_each_node(&block)
+      stack.each(&block)
+    end
+
+    # TSort: yield entries that must come BEFORE the given entry
+    def tsort_each_child(entry, &block)
+      after_targets = Array(entry.after).compact
+      stack.each do |other|
+        next if other.equal?(entry)
+        other_before = Array(other.before).compact
+
+        if after_targets.include?(other.klass) || other_before.include?(entry.klass)
+          yield other
+        end
+      end
+    end
+
+    def create_entry(args, kwargs, block, before: nil, after: nil)
       klass, *args = args
 
       if [ klass, block ].none?
@@ -152,15 +154,20 @@ module Meddleware
           end
         end
 
-        [ klass, args, kwargs, block ].compact
+        Entry.new(klass, args, kwargs, block, before, after)
       else
-        [ block ]
+        Entry.new(block, nil, nil, nil, before, after)
       end
     end
 
     def build_chain
-      # build the middleware stack
-      stack.map do |klass, args, kwargs, block|
+      # build the middleware stack, resolving dependencies via TSort
+      tsort.map do |entry|
+        klass = entry.klass
+        args = entry.args
+        kwargs = entry.kwargs
+        block = entry.block
+
         if klass.is_a? Class
           klass.new(*args, **kwargs, &block)
         else
