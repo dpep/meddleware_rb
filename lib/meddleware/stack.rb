@@ -44,7 +44,7 @@ module Meddleware
 
     def replace(old_klass, *args, before: nil, after: nil, **kwargs, &block)
       entry = create_entry(args, kwargs, block, before: before, after: after)
-      remove(entry.klass)
+      remove(entry.klass) unless entry.klass == old_klass
 
       i = index(old_klass)
 
