@@ -4,8 +4,8 @@ Gem::Specification.new do |s|
   s.name        = "meddleware"
   s.version     = Meddleware::VERSION
   s.authors     = ['Daniel Pepper']
-  s.summary     = "Meddleware"
-  s.description = 'A middleware framework to make meddling easy.'
+  s.summary     = 'A middleware framework to make meddling easy.'
+  s.description = s.summary
   s.homepage    = "https://github.com/dpep/meddleware_rb"
   s.license     = 'MIT'
   s.files       = `git ls-files * ':!:spec'`.split("\n")
