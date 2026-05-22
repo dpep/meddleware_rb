@@ -1,12 +1,15 @@
-require_relative "lib/meddleware/version"
+require_relative 'lib/meddleware/version'
 
 Gem::Specification.new do |s|
-  s.name        = "meddleware"
+  s.name        = 'meddleware'
   s.version     = Meddleware::VERSION
-  s.authors     = ['Daniel Pepper']
+  s.authors     = [ 'Daniel Pepper' ]
   s.summary     = 'A middleware framework to make meddling easy.'
-  s.description = s.summary
-  s.homepage    = "https://github.com/dpep/meddleware_rb"
+  s.description = 'Lightweight, Rack-style middleware for any Ruby class. ' \
+                  'Lets callers wrap execution with before/after hooks — ' \
+                  'modifying arguments, intercepting results, or logging — ' \
+                  'without monkey patching. Supports declarative ordering via TSort.'
+  s.homepage    = 'https://github.com/dpep/meddleware_rb'
   s.license     = 'MIT'
   s.files       = `git ls-files * ':!:spec'`.split("\n")
 
