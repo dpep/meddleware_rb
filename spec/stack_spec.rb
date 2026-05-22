@@ -452,6 +452,11 @@ describe Meddleware::Stack do
         subject.replace(A, nil)
       }.to raise_error(ArgumentError)
     end
+
+    it 'replaces a middleware with itself, updating constraints' do
+      subject.replace(A, A, after: B)
+      expect(stack).to eq [ B, A ]
+    end
   end
 
   describe '.new' do
