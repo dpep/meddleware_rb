@@ -169,11 +169,18 @@ describe Meddleware::Stack do
   describe '#after' do
     it_behaves_like 'a middleware adder method', :after
 
-    it 'adds middleware where specified' do
+    it 'orders middleware after the target' do
       subject.use A
       subject.use B
       subject.after A, C
-      expect(stack).to eq [ A, C, B ]
+      expect(stack).to eq [ A, B, C ]
+    end
+
+    it 'is order independent' do
+      subject.after A, C
+      subject.use B
+      subject.use A
+      expect(stack.index(A)).to be < stack.index(C)
     end
 
     it 'maintans order for duplicates' do
@@ -181,7 +188,7 @@ describe Meddleware::Stack do
       subject.use B
       subject.after A, C
       subject.after A, C
-      expect(stack).to eq [ A, C, B ]
+      expect(stack).to eq [ A, B, C ]
     end
 
     it 'works when target is missing' do
@@ -209,12 +216,12 @@ describe Meddleware::Stack do
 
       it 'ignores missing targets' do
         subject.after [ A, Meddler ], C
-        expect(stack).to eq [ A, C, B ]
+        expect(stack).to eq [ A, B, C ]
       end
 
       it 'handles nil targets' do
         subject.after [ nil, A ], C
-        expect(stack).to eq [ A, C, B ]
+        expect(stack).to eq [ A, B, C ]
       end
 
       it 'handles an empty array' do
@@ -227,11 +234,18 @@ describe Meddleware::Stack do
   describe '#before' do
     it_behaves_like 'a middleware adder method', :before
 
-    it 'adds middleware where specified' do
+    it 'orders middleware before the target' do
       subject.use A
       subject.use B
       subject.before B, C
       expect(stack).to eq [ A, C, B ]
+    end
+
+    it 'is order independent' do
+      subject.before B, C
+      subject.use A
+      subject.use B
+      expect(stack.index(C)).to be < stack.index(B)
     end
 
     it 'maintans order for duplicates' do
@@ -245,13 +259,13 @@ describe Meddleware::Stack do
     it 'works when target is missing' do
       subject.use A
       subject.before B, C
-      expect(stack).to eq [ C, A ]
+      expect(stack).to eq [ A, C ]
     end
 
     it 'works when target is nil' do
       subject.use A
       subject.before nil, C
-      expect(stack).to eq [ C, A ]
+      expect(stack).to eq [ A, C ]
     end
 
     context 'when target is an array' do
@@ -277,7 +291,7 @@ describe Meddleware::Stack do
 
       it 'handles an empty array' do
         subject.before [], C
-        expect(stack).to eq [ C, A, B ]
+        expect(stack).to eq [ A, B, C ]
       end
     end
   end
@@ -449,6 +463,62 @@ describe Meddleware::Stack do
 
       expect(instance).to include A
       expect(instance).to include B
+    end
+  end
+
+  describe 'dependency resolution' do
+    it 'resolves order regardless of load order' do
+      subject.use C, after: B
+      subject.use B, after: A
+      subject.use A
+      expect(stack).to eq [ A, B, C ]
+    end
+
+    it 'accepts before: kwarg on use' do
+      subject.use B
+      subject.use A, before: B
+      expect(stack).to eq [ A, B ]
+    end
+
+    it 'accepts after: kwarg on use' do
+      subject.use A
+      subject.use B, after: A
+      expect(stack).to eq [ A, B ]
+    end
+
+    it 'accepts an array for before:' do
+      subject.use A
+      subject.use B
+      subject.use C, before: [ A, B ]
+      expect(stack).to eq [ C, A, B ]
+    end
+
+    it 'accepts an array for after:' do
+      subject.use A
+      subject.use B
+      subject.use C, after: [ A, B ]
+      expect(stack).to eq [ A, B, C ]
+    end
+
+    it 'supports before: and after: on prepend' do
+      subject.use A
+      subject.use B
+      subject.prepend C, after: A
+      expect(stack).to eq [ A, C, B ]
+    end
+
+    it 'ignores constraints on missing middleware' do
+      subject.use A, after: :missing
+      subject.use B, before: :missing
+      expect(stack).to eq [ A, B ]
+    end
+
+    it 'raises on circular dependencies' do
+      subject.use A, after: B
+      subject.use B, after: A
+      expect {
+        subject.send(:build_chain)
+      }.to raise_error(TSort::Cyclic)
     end
   end
 

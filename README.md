@@ -69,6 +69,22 @@ end
 See [documentation](https://github.com/dpep/meddleware_rb/wiki/DSL) for full DSL.
 
 
+## Ordering
+
+Middleware can declare ordering constraints via `before:` and `after:`.  The stack is resolved with a topological sort (via Ruby's `TSort`), so the order is correct regardless of when each middleware is added.
+
+```ruby
+MyWidget.middleware do
+  use Logger,    before: Auth
+  use Validator, after:  Auth
+  use Auth
+end
+# => [ Logger, Auth, Validator ]
+```
+
+The convenience methods `before(target, ...)` and `after(target, ...)` are shorthand for the same.
+
+
 ----
 ## Full Example
 ```ruby
