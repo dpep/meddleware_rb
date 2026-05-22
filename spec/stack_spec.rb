@@ -527,6 +527,80 @@ describe Meddleware::Stack do
     end
   end
 
+  describe '#+' do
+    let(:other) { Meddleware::Stack.new }
+
+    it 'returns a new Stack with entries from both' do
+      subject.use A
+      other.use B
+      result = subject + other
+
+      expect(result).to be_a Meddleware::Stack
+      expect(result).not_to be subject
+      expect(result).not_to be other
+      expect(result.send(:build_chain).map(&:class)).to eq [ A, B ]
+    end
+
+    it 'does not modify the originals' do
+      subject.use A
+      other.use B
+      subject + other
+
+      expect(stack).to eq [ A ]
+      expect(other.send(:build_chain).map(&:class)).to eq [ B ]
+    end
+
+    it 'handles an empty right-hand side' do
+      subject.use A
+      result = subject + other
+      expect(result.send(:build_chain).map(&:class)).to eq [ A ]
+    end
+
+    it 'handles an empty left-hand side' do
+      other.use A
+      result = subject + other
+      expect(result.send(:build_chain).map(&:class)).to eq [ A ]
+    end
+
+    it 'handles two empty stacks' do
+      expect((subject + other)).to be_empty
+    end
+
+    it 'dedupes overlapping middleware, preferring the right side' do
+      subject.use A
+      subject.use B
+      other.use A
+
+      result = subject + other
+      expect(result.send(:build_chain).map(&:class)).to eq [ B, A ]
+    end
+
+    it 'preserves ordering constraints across stacks' do
+      subject.use A
+      other.use C, before: A
+
+      result = subject + other
+      expect(result.send(:build_chain).map(&:class)).to eq [ C, A ]
+    end
+
+    it 'produces an executable chain' do
+      m1 = Meddler.new
+      m2 = Meddler.new
+      subject.use m1
+      other.use m2
+
+      expect(m1).to receive(:call).and_yield
+      expect(m2).to receive(:call).and_yield
+      expect {|b| (subject + other).call(&b) }.to yield_control
+    end
+
+    it 'rejects non-Stack arguments' do
+      expect { subject + nil }.to raise_error(ArgumentError)
+      expect { subject + [] }.to raise_error(ArgumentError)
+      expect { subject + Object.new }.to raise_error(ArgumentError)
+    end
+  end
+
   describe '#index' do
     before do
       subject.use A

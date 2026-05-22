@@ -69,6 +69,19 @@ module Meddleware
       stack.empty?
     end
 
+    def +(other)
+      unless other.is_a?(Meddleware::Stack)
+        raise ArgumentError, "expected Meddleware::Stack, got #{other.class}"
+      end
+
+      self.class.new.tap do |result|
+        (stack + other.stack).each do |entry|
+          result.stack.reject! { |e| e.klass == entry.klass }
+          result.stack << entry
+        end
+      end
+    end
+
     def call(*args, **kwargs)
       chain = build_chain
       default_args = args
