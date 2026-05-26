@@ -85,6 +85,26 @@ Both kwargs accept a single class or an array.  The convenience methods `before(
 See the [wiki](https://github.com/dpep/meddleware_rb/wiki/DSL) for the full DSL.
 
 
+## Combining chains
+
+Two chains can be concatenated with `+`, producing a new, executable chain.  The originals are left untouched, ordering constraints are preserved, and entries from the right-hand side win on dedup.
+
+```ruby
+auth = Meddleware::Stack.new do
+  use Logger
+  use Auth
+end
+
+api = Meddleware::Stack.new do
+  use Validator, after: Auth
+end
+
+combined = auth + api
+combined.call(request) { ... }
+# => [ Logger, Auth, Validator ]
+```
+
+
 ----
 ## Full Example
 ```ruby
