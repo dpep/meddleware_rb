@@ -7,7 +7,13 @@ module Meddleware
     Entry = Struct.new(:klass, :args, :kwargs, :block, :before, :after)
 
     def initialize(&block)
+      @stack = []
       instance_eval(&block) if block_given?
+    end
+
+    def freeze
+      @stack.freeze
+      super
     end
 
     def use(*args, before: nil, after: nil, **kwargs, &block)
@@ -119,7 +125,7 @@ module Meddleware
     protected
 
     def stack
-      @stack ||= []
+      @stack
     end
 
     def index(klass)

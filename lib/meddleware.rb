@@ -11,6 +11,8 @@ module Meddleware
   private
 
   def self.extended(base)
+    base.instance_variable_set(:@middleware, Meddleware::Stack.new)
+
     unless base.instance_methods.include?(:middleware)
       base.class_eval do
         def middleware

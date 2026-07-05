@@ -601,6 +601,48 @@ describe Meddleware::Stack do
     end
   end
 
+  describe '#freeze' do
+    before do
+      subject.use A
+      subject.freeze
+    end
+
+    it 'freezes the stack' do
+      expect(subject).to be_frozen
+    end
+
+    it 'freezes the underlying entry list' do
+      expect(subject.send(:stack)).to be_frozen
+    end
+
+    it 'blocks further mutation' do
+      expect { subject.use B }.to raise_error(FrozenError)
+      expect { subject.prepend B }.to raise_error(FrozenError)
+      expect { subject.remove A }.to raise_error(FrozenError)
+      expect { subject.replace A, B }.to raise_error(FrozenError)
+      expect { subject.clear }.to raise_error(FrozenError)
+    end
+
+    it 'still executes the chain' do
+      m = Meddler.new
+      stack = Meddleware::Stack.new
+      stack.use m
+      stack.freeze
+
+      expect(m).to receive(:call).and_yield
+      expect {|b| stack.call(&b) }.to yield_control
+    end
+
+    it 'does not prevent concatenation' do
+      other = Meddleware::Stack.new
+      other.use B
+      result = subject + other
+
+      expect(result).not_to be_frozen
+      expect(result.send(:build_chain).map(&:class)).to eq [ A, B ]
+    end
+  end
+
   describe '#index' do
     before do
       subject.use A

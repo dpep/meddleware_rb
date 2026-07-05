@@ -17,6 +17,10 @@ describe Meddleware do
       expect(klass.middleware).to be(klass.middleware)
     end
 
+    it 'eagerly initializes the middleware stack' do
+      expect(klass.instance_variable_get(:@middleware)).to be_a Meddleware::Stack
+    end
+
     it 'enables DSL' do
       klass.middleware do
         use Meddler
