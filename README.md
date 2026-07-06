@@ -105,6 +105,20 @@ combined.call(request) { ... }
 ```
 
 
+## Thread safety
+
+Meddleware follows the standard middleware pattern: configure once, then invoke concurrently.  `Stack#call` uses only local state, so multiple threads may execute the same chain in parallel.  Mutation methods (`use`, `prepend`, `remove`, `replace`, `clear`) are *not* safe to run concurrently with `call` or with each other, so keep configuration on a single thread at boot.
+
+Once configuration is done, `Stack#freeze` locks the chain: it freezes the underlying entry list so any later mutation raises `FrozenError`, while `call` continues to work.
+
+```ruby
+MyWidget.middleware do
+  use Auth
+  use Logger
+end.freeze
+```
+
+
 ----
 ## Full Example
 ```ruby
