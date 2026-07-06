@@ -124,9 +124,7 @@ module Meddleware
 
     protected
 
-    def stack
-      @stack
-    end
+    attr_reader :stack
 
     def index(klass)
       stack.index {|entry| entry.klass == klass }
