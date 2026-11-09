@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.license     = 'MIT'
   s.files       = `git ls-files * ':!:spec'`.split("\n")
 
-  s.required_ruby_version = '>= 3'
+  s.required_ruby_version = '>= 3.3'
 
   s.add_development_dependency 'debug', '>= 1'
   s.add_development_dependency 'rspec', '>= 3.13'
