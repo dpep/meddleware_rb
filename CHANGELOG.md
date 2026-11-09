@@ -1,3 +1,6 @@
+## Unreleased
+- Requires Ruby 3.3 or newer.
+
 ###  v0.4.0  (2024-04-05)
 - drop ruby 2.7
 - gem constraints
